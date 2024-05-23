@@ -31,7 +31,9 @@ class LinearRegression:
         include_intercept: bool, default=True
             Should fitted model include an intercept or not
         """
-        pass
+        self.fitted_ = False
+        self.include_intercept_ = include_intercept
+        self.coefs_ = None
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> NoReturn:
         """
