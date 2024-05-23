@@ -51,7 +51,11 @@ class LinearRegression:
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        pass
+        if self.include_intercept_:  # Add intercept to X if needed
+            X = np.hstack([np.ones((X.shape[0], 1)), X])
+
+        self.coefs_ = np.linalg.inv(np.dot(X.T, X)).dot(X.T).dot(y) # Compute coefficients by (X^T*X)^-1 * X^T * y
+        self.fitted_ = True
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -67,7 +71,11 @@ class LinearRegression:
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        pass
+        if not self.fitted_:
+            raise ValueError("Estimator has not been fitted yet.")
+        if self.include_intercept_:
+            X = np.hstack([np.ones((X.shape[0], 1)), X]) # Add intercept to X if needed
+        return np.dot(X, self.coefs_)
 
     def loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -86,4 +94,6 @@ class LinearRegression:
         loss : float
             Performance under MSE loss function
         """
-        pass
+        y_predict = self.predict(X)
+        return np.mean((y - y_predict) ** 2)
+    
