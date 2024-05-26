@@ -150,7 +150,7 @@ if __name__ == '__main__':
     X_train_clean = preprocess_train(X_train, y_train)
 
     # Question 4 - Feature evaluation of train dataset with respect to response
-    # feature_evaluation(X_train_clean, y_train)
+    feature_evaluation(X_train_clean, y_train)
 
     # Question 5 - preprocess the test data
     X_test_clean = preprocess_test(X_test)
@@ -166,21 +166,32 @@ if __name__ == '__main__':
     # Initialize variables
     train_size = X_train_clean.shape[0]
     loss = np.zeros((10, 10))
-    for i in range(10):
-        for j in range(10):
-            # Sample p% of the overall training data
-            sample_size = int((i + 1) / 10 * train_size)
-            sample_indices = np.random.choice(train_size, sample_size, replace=False)
-            X_sample = X_train_clean.iloc[sample_indices]
-            y_sample = y_train.iloc[sample_indices]
+    # for i in range(10):
+    #     for j in range(10):
+    #         # Sample p% of the overall training data
+    #         sample_size = int((i + 1) / 10 * train_size)
+    #         sample_indices = np.random.choice(train_size, sample_size, replace=False)
+    #         X_sample = X_train_clean.iloc[sample_indices]
+    #         y_sample = y_train.iloc[sample_indices]
 
-            # Fit linear model (including intercept) over sampled set
-            #create model that is linear regression class from linear_regression.py
-            model = linear_regression.LinearRegression(True)
-            model.fit(X_sample, y_sample)
+    #         # Fit linear model (including intercept) over sampled set
+    #         #create model that is linear regression class from linear_regression.py
+    #         model = linear_regression.LinearRegression(True)
+    #         model.fit(X_sample, y_sample)
 
-            # Test fitted model over test set
-            loss[i, j] = model.loss(X_test_clean, y_test)
+    #         # Test fitted model over test set
+    #         loss[i, j] = model.loss(X_test_clean, y_test)
+
+    #         # Plot
+    #         mean_loss = np.mean(loss, axis=1)
+    #         std_loss = np.std(loss, axis=1)
+    #         plt.plot(np.linspace(10, 100, 10), mean_loss)
+    #         plt.fill_between(np.linspace(10, 100, 10), mean_loss - 2 * std_loss, mean_loss + 2 * std_loss, alpha=0.2)
+    #         plt.xlabel("Training Size (%)")
+    #         plt.ylabel("Loss")
+    #         plt.title("Loss as function of Training Size")
+    #         plt.show()
+    #         plt.close()
 
             
 
