@@ -1,6 +1,6 @@
-
-
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from typing import NoReturn
 
 
 def preprocess_train(X: pd.DataFrame, y: pd.Series):
@@ -16,7 +16,7 @@ def preprocess_train(X: pd.DataFrame, y: pd.Series):
     -------
     A clean, preprocessed version of the data
     """
-    pass
+    
 
 
 def preprocess_test(X: pd.DataFrame):
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     X, y = df.drop("price", axis=1), df.price
 
     # Question 2 - split train test
-
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=52) #(52 is my lucky number)
     # Question 3 - preprocessing of housing prices train dataset
 
     # Question 4 - Feature evaluation of train dataset with respect to response
