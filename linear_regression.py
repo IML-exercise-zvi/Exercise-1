@@ -51,7 +51,7 @@ class LinearRegression:
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        if self.include_intercept_:  # Add intercept to X if needed
+        if self.include_intercept_ == True: # Add intercept to X if needed
             X = np.hstack([np.ones((X.shape[0], 1)), X])
 
         self.coefs_ = np.linalg.inv(np.dot(X.T, X)).dot(X.T).dot(y) # Compute coefficients by (X^T*X)^-1 * X^T * y

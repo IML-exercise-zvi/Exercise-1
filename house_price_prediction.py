@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import linear_regression
+from linear_regression import LinearRegression
 from sklearn.model_selection import train_test_split
 from typing import NoReturn
 from sklearn.preprocessing import StandardScaler
@@ -150,7 +150,7 @@ if __name__ == '__main__':
     X_train_clean = preprocess_train(X_train, y_train)
 
     # Question 4 - Feature evaluation of train dataset with respect to response
-    feature_evaluation(X_train_clean, y_train)
+    #feature_evaluation(X_train_clean, y_train)
 
     # Question 5 - preprocess the test data
     X_test_clean = preprocess_test(X_test)
@@ -164,34 +164,41 @@ if __name__ == '__main__':
     # Then plot average loss as function of training size with error ribbon of size (mean-2*std, mean+2*std)
 
     # Initialize variables
-    train_size = X_train_clean.shape[0]
-    loss = np.zeros((10, 10))
-    # for i in range(10):
-    #     for j in range(10):
-    #         # Sample p% of the overall training data
-    #         sample_size = int((i + 1) / 10 * train_size)
-    #         sample_indices = np.random.choice(train_size, sample_size, replace=False)
-    #         X_sample = X_train_clean.iloc[sample_indices]
-    #         y_sample = y_train.iloc[sample_indices]
+    percentages = range(10, 101)  # Percentage values from 10% to 100%
+    losses = []
 
-    #         # Fit linear model (including intercept) over sampled set
-    #         #create model that is linear regression class from linear_regression.py
-    #         model = linear_regression.LinearRegression(True)
-    #         model.fit(X_sample, y_sample)
+    # Iterate over each percentage of training set
+    for p in percentages:
+        p_losses = []
+        for _ in range(10):  # Repeat 10 times for each percentage
+            # Sample p% of the training set
+            if p == 100:
+                X_train_sampled, _, y_train_sampled, _ = train_test_split(X_train_clean, y_train, train_size=1, random_state=52)
+            else:
+                X_train_sampled, _, y_train_sampled, _ = train_test_split(X_train_clean, y_train, train_size=float(p)/100.0, random_state=52)
 
-    #         # Test fitted model over test set
-    #         loss[i, j] = model.loss(X_test_clean, y_test)
+            # Fit linear regression model
+            model = LinearRegression(include_intercept=True)
+            model.fit(X_train_sampled.values, y_train_sampled.values)
 
-    #         # Plot
-    #         mean_loss = np.mean(loss, axis=1)
-    #         std_loss = np.std(loss, axis=1)
-    #         plt.plot(np.linspace(10, 100, 10), mean_loss)
-    #         plt.fill_between(np.linspace(10, 100, 10), mean_loss - 2 * std_loss, mean_loss + 2 * std_loss, alpha=0.2)
-    #         plt.xlabel("Training Size (%)")
-    #         plt.ylabel("Loss")
-    #         plt.title("Loss as function of Training Size")
-    #         plt.show()
-    #         plt.close()
+            # Evaluate model and calculate loss
+            test_loss = model.loss(X_test_clean.values, y_test.values)
+            p_losses.append(test_loss)
 
-            
+        # Store mean and standard deviation of loss for this percentage
+        losses.append((np.mean(p_losses), np.std(p_losses)))
+
+    # Extract mean losses and standard deviations
+    mean_losses = [loss[0] for loss in losses]
+    std_losses = [loss[1] for loss in losses]
+
+    # Plot mean loss as a function of percentage
+    plt.errorbar(percentages, mean_losses, yerr=2 * np.array(std_losses), fmt='-o')
+    plt.xlabel('Percentage of Training Set (%)')
+    plt.ylabel('Mean Loss')
+    plt.title('Mean Loss vs. Percentage of Training Set')
+    plt.grid(True)
+    plt.show()
+    plt.show()
+                
 
