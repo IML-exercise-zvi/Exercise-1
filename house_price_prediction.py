@@ -4,6 +4,7 @@ from linear_regression import LinearRegression
 from sklearn.model_selection import train_test_split
 from typing import NoReturn
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder
 import matplotlib.pyplot as plt
 
 
@@ -23,35 +24,27 @@ def preprocess_train(X: pd.DataFrame, y: pd.Series):
     X['date'] = pd.to_datetime(X['date'])
     X['year'] = X['date'].dt.year
 
-    # Calculate house age
-    X['house_age'] = X['year'] - X['yr_built']
-    X['is_renovated'] = X['yr_renovated'].apply(lambda x: 1 if x > 0 else 0)
+    X['house_age'] = X['year'] - X['yr_built'] # Calculate house age and add as new feature
+    X['is_renovated'] = X['yr_renovated'].apply(lambda x: 1 if x > 0 else 0) # Add new feature to indicate if house was renovated
 
     #Drop unnecessary or 'wrong' rows
-    if X["sqft_living"].isnull().sum() > 0 or X["sqft_lot"].isnull().sum() > 0 or X["sqft_above"].isnull().sum() > 0 or X["sqft_basement"].isnull().sum() > 0 or X["sqft_living15"].isnull().sum() > 0 or X["sqft_lot15"].isnull().sum() > 0:
-        X.drop(X.index, inplace=True)
-        y = y.drop(y.index)
+    for row in X.iterrows():
+        if row[1]['sqft_living'] <= 0 or row[1]['sqft_lot'] <= 0 or row[1]['sqft_above'] <= 0 or row[1]['sqft_basement'] <= 0 or row[1]['sqft_living15'] <= 0 or row[1]['sqft_lot15'] <= 0:
+            X.drop(row[0], inplace=True)
+            y.drop(row[0], inplace=True)
+    
+    y = y.apply(lambda x: float(x)) # Convert y to float type
 
     # Drop unnecessary columns
-    X.drop(columns=['id','date', 'yr_built', 'yr_renovated', 'lat', 'long'], inplace=True)
+    X.drop(columns=['id','date', 'yr_built', 'yr_renovated', 'lat', 'long', 'year'], inplace=True)
 
-    # Handle missing values (if any) or Nan values with mean
-    X.fillna(X.mean(), inplace=True)
+    X.fillna(X.mean(), inplace=True) # Handle missing values (if any) or Nan values with mean
 
-     # Convert categorical features to category type
-    X['waterfront'] = X['waterfront'].astype('category')
-    X['view'] = X['view'].astype('category')
-    X['condition'] = X['condition'].astype('category')
-    X['grade'] = X['grade'].astype('category')
-    
-    # Log transform skewed numeric features
-    skewed_features = ['sqft_living', 'sqft_lot', 'sqft_above', 'sqft_basement', 'sqft_living15', 'sqft_lot15']
-    X[skewed_features] = X[skewed_features].apply(lambda x: np.log1p(x))
-
-    # Normalize numeric features
-    numeric_features = ['sqft_living', 'sqft_lot', 'sqft_above', 'sqft_basement', 'sqft_living15', 'sqft_lot15']
-    scaler = StandardScaler()
-    X[numeric_features] = scaler.fit_transform(X[numeric_features])
+    # Convert categorical features to category type
+    # X['waterfront'] = X['waterfront'].astype('category')
+    # X['view'] = X['view'].astype('category')
+    # X['condition'] = X['condition'].astype('category')
+    # X['grade'] = X['grade'].astype('category')
 
     return X
 
@@ -71,30 +64,19 @@ def preprocess_test(X: pd.DataFrame):
     X['date'] = pd.to_datetime(X['date'])
     X['year'] = X['date'].dt.year
 
-    # Calculate house age
-    X['house_age'] = X['year'] - X['yr_built']
-    X['is_renovated'] = X['yr_renovated'].apply(lambda x: 1 if x > 0 else 0)
+    X['house_age'] = X['year'] - X['yr_built'] # Calculate house age and add as new feature
+    X['is_renovated'] = X['yr_renovated'].apply(lambda x: 1 if x > 0 else 0) # Add new feature to indicate if house was renovated
 
     # Drop unnecessary columns
-    X.drop(columns=['id','date', 'yr_built', 'yr_renovated', 'lat', 'long'], inplace=True)
+    X.drop(columns=['id','date', 'yr_built', 'yr_renovated', 'lat', 'long', 'year'], inplace=True)
 
-    # Handle missing values (if any) or Nan values with mean
-    X.fillna(X.mean(), inplace=True)
+    X.fillna(X.mean(), inplace=True) # Handle missing values (if any) or Nan values with mean
 
-     # Convert categorical features to category type
-    X['waterfront'] = X['waterfront'].astype('category')
-    X['view'] = X['view'].astype('category')
-    X['condition'] = X['condition'].astype('category')
-    X['grade'] = X['grade'].astype('category')
-    
-    # Log transform skewed numeric features
-    skewed_features = ['sqft_living', 'sqft_lot', 'sqft_above', 'sqft_basement', 'sqft_living15', 'sqft_lot15']
-    X[skewed_features] = X[skewed_features].apply(lambda x: np.log1p(x))
-
-    # Normalize numeric features
-    numeric_features = ['sqft_living', 'sqft_lot', 'sqft_above', 'sqft_basement', 'sqft_living15', 'sqft_lot15']
-    scaler = StandardScaler()
-    X[numeric_features] = scaler.fit_transform(X[numeric_features])
+    # Convert categorical features to category type
+    # X['waterfront'] = X['waterfront'].astype('category')
+    # X['view'] = X['view'].astype('category')
+    # X['condition'] = X['condition'].astype('category')
+    # X['grade'] = X['grade'].astype('category')
 
     return X
 
@@ -134,6 +116,8 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
         plt.title(f"{column} - Pearson Correlation: {pearson_corr}")
         plt.xlabel(column)
         plt.ylabel("price")
+        # i want to save it in my mac in IML folder in Graphs-ex1 folder
+        output_path = "/Users/zvimarmor/Desktop/IML/Graphs-ex1"
         plt.savefig(f"{output_path}/{column}.png")
         plt.show()
         plt.close()
@@ -171,18 +155,18 @@ if __name__ == '__main__':
     for p in percentages:
         p_losses = []
         for _ in range(10):  # Repeat 10 times for each percentage
-            # Sample p% of the training set
+            # Sample p% of training data
             if p == 100:
-                X_train_sampled, _, y_train_sampled, _ = train_test_split(X_train_clean, y_train, train_size=1, random_state=52)
+                X_train_sampled, unused_X, y_train_sampled, unused_y = train_test_split(X_train_clean, y_train, train_size=1, random_state=52)
             else:
-                X_train_sampled, _, y_train_sampled, _ = train_test_split(X_train_clean, y_train, train_size=float(p)/100.0, random_state=52)
+                X_train_sampled, unused_X, y_train_sampled, unused_y = train_test_split(X_train_clean, y_train, train_size=float(p)/100.0, random_state=52)
 
             # Fit linear regression model
             model = LinearRegression(include_intercept=True)
-            model.fit(X_train_sampled.values, y_train_sampled.values)
+            model.fit(X_train_sampled, y_train_sampled)
 
             # Evaluate model and calculate loss
-            test_loss = model.loss(X_test_clean.values, y_test.values)
+            test_loss = model.loss(X_test_clean, y_test)
             p_losses.append(test_loss)
 
         # Store mean and standard deviation of loss for this percentage
@@ -198,7 +182,6 @@ if __name__ == '__main__':
     plt.ylabel('Mean Loss')
     plt.title('Mean Loss vs. Percentage of Training Set')
     plt.grid(True)
-    plt.show()
     plt.show()
                 
 

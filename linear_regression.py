@@ -54,7 +54,7 @@ class LinearRegression:
         if self.include_intercept_ == True: # Add intercept to X if needed
             X = np.hstack([np.ones((X.shape[0], 1)), X])
 
-        self.coefs_ = np.linalg.inv(np.dot(X.T, X)).dot(X.T).dot(y) # Compute coefficients by (X^T*X)^-1 * X^T * y
+        self.coefs_ = np.dot(np.linalg.inv(np.dot(X.T, X)), np.dot(X.T, y))
         self.fitted_ = True
 
     def predict(self, X: np.ndarray) -> np.ndarray:
