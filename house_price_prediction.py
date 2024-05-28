@@ -41,10 +41,10 @@ def preprocess_train(X: pd.DataFrame, y: pd.Series):
     X.fillna(X.mean(), inplace=True) # Handle missing values (if any) or Nan values with mean
     
     # Convert categorical features to category type
-    # X['waterfront'] = X['waterfront'].astype('category')
-    # X['view'] = X['view'].astype('category')
-    # X['condition'] = X['condition'].astype('category')
-    # X['grade'] = X['grade'].astype('category')
+    X['waterfront'] = X['waterfront'].astype('category')
+    X['view'] = X['view'].astype('category')
+    X['condition'] = X['condition'].astype('category')
+    X['grade'] = X['grade'].astype('category')
 
     return X, y
 
