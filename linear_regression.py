@@ -97,4 +97,3 @@ class LinearRegression:
         """
         y_predict = self.predict(X)
         return np.mean((y - y_predict) ** 2)
-    

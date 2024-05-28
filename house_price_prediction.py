@@ -33,7 +33,7 @@ def preprocess_train(X: pd.DataFrame, y: pd.Series):
             X.drop(index=row[0], inplace=True)
             y.drop(index=row[0], inplace=True)
     
-    # y = y.apply(lambda x: float(x)) # Convert y to float type
+    y.fillna(y.mean(), inplace=True) # Handle missing values (if any) or Nan values with mean
 
     # Drop unnecessary columns entirely
     X.drop(columns=['id','date', 'yr_built', 'yr_renovated', 'lat', 'long', 'year'], inplace=True)
@@ -46,7 +46,7 @@ def preprocess_train(X: pd.DataFrame, y: pd.Series):
     # X['condition'] = X['condition'].astype('category')
     # X['grade'] = X['grade'].astype('category')
 
-    return X
+    return X, y
 
 
 def preprocess_test(X: pd.DataFrame):
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=52) #(52 is my lucky number)
 
     # Question 3 - preprocessing of housing prices train dataset
-    X_train_clean = preprocess_train(X_train, y_train)
+    X_train_clean, y_train = preprocess_train(X_train, y_train)
 
     # Question 4 - Feature evaluation of train dataset with respect to response
     #feature_evaluation(X_train_clean, y_train)
@@ -159,7 +159,7 @@ if __name__ == '__main__':
             if p == 100:
                 X_train_sampled, _, y_train_sampled, _ = X_train_clean, None, y_train, None
             else:
-                X_train_sampled, _, y_train_sampled, _ = train_test_split(X_train_clean, y_train, train_size=float(p)/100.0, random_state=52)
+                X_train_sampled, _, y_train_sampled, _ = train_test_split(X_train_clean, y_train, train_size=float(p)/100.0, random_state=None)
 
             # Fit linear regression model
             model = LinearRegression(include_intercept=True)
@@ -170,16 +170,19 @@ if __name__ == '__main__':
             p_losses.append(test_loss)
 
         # Store mean and standard deviation of loss for this percentage
-        losses.append(np.mean(p_losses))
+        losses.append((np.mean(p_losses), np.std(p_losses)))
 
-    # Plot the mean loss as a function of p%, as well as a confidence interval of mean(loss) ± 2 ∗ std(loss).
-    plt.plot(percentages, losses, label="Mean Loss")
-    plt.fill_between(percentages, np.array(losses) - 2 * np.std(losses), np.array(losses) + 2 * np.std(losses), alpha=0.3, label="Mean Loss ± 2*std")
-    plt.xlabel("Percentage of Training Data (%)")
-    plt.ylabel("Mean Loss")
-    plt.title("Mean Loss as function of Training Data Size")
+    # Extract mean losses and standard deviations
+    mean_losses = [loss[0] for loss in losses]
+    std_losses = [loss[1] for loss in losses]
+
+    # Plot mean loss as a function of percentage
+    plt.errorbar(percentages, mean_losses, yerr=2 * np.array(std_losses), fmt='-o')
+    plt.xlabel('Percentage of Training Set (%)')
+    plt.ylabel('Mean Loss')
+    plt.title('Mean Loss vs. Percentage of Training Set')
+    plt.grid(True)
     plt.show()
-    plt.close()
 
 
 
