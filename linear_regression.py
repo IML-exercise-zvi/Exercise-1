@@ -52,9 +52,10 @@ class LinearRegression:
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
         if self.include_intercept_ == True: # Add intercept to X if needed
-            X = np.hstack([np.ones((X.shape[0], 1)), X])
+            ones = np.ones((X.shape[0], 1))
+            X = np.hstack((ones, X))
 
-        self.coefs_ = np.dot(np.linalg.inv(np.dot(X.T, X)), np.dot(X.T, y))
+        self.coefs_ = np.linalg.inv(X.T.dot(X)).dot(X.T).dot(y) # Compute coefficients using x^T * x = x^T * y
         self.fitted_ = True
 
     def predict(self, X: np.ndarray) -> np.ndarray:
@@ -75,7 +76,7 @@ class LinearRegression:
             raise ValueError("Estimator has not been fitted yet.")
         if self.include_intercept_:
             X = np.hstack([np.ones((X.shape[0], 1)), X]) # Add intercept to X if needed
-        return np.dot(X, self.coefs_)
+        return X.dot(self.coefs_)
 
     def loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """

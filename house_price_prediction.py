@@ -29,17 +29,17 @@ def preprocess_train(X: pd.DataFrame, y: pd.Series):
 
     #Drop unnecessary or 'wrong' rows
     for row in X.iterrows():
-        if row[1]['sqft_living'] <= 0 or row[1]['sqft_lot'] <= 0 or row[1]['sqft_above'] <= 0 or row[1]['sqft_basement'] <= 0 or row[1]['sqft_living15'] <= 0 or row[1]['sqft_lot15'] <= 0:
-            X.drop(row[0], inplace=True)
-            y.drop(row[0], inplace=True)
+        if row[1]['sqft_living'] <= 0 or row[1]['sqft_lot'] <= 0 or row[1]['sqft_above'] <= 0 or row[1]['sqft_basement'] < 0 or row[1]['sqft_living15'] <= 0 or row[1]['sqft_lot15'] <= 0:
+            X.drop(index=row[0], inplace=True)
+            y.drop(index=row[0], inplace=True)
     
-    y = y.apply(lambda x: float(x)) # Convert y to float type
+    # y = y.apply(lambda x: float(x)) # Convert y to float type
 
-    # Drop unnecessary columns
+    # Drop unnecessary columns entirely
     X.drop(columns=['id','date', 'yr_built', 'yr_renovated', 'lat', 'long', 'year'], inplace=True)
 
     X.fillna(X.mean(), inplace=True) # Handle missing values (if any) or Nan values with mean
-
+    
     # Convert categorical features to category type
     # X['waterfront'] = X['waterfront'].astype('category')
     # X['view'] = X['view'].astype('category')
@@ -70,7 +70,7 @@ def preprocess_test(X: pd.DataFrame):
     # Drop unnecessary columns
     X.drop(columns=['id','date', 'yr_built', 'yr_renovated', 'lat', 'long', 'year'], inplace=True)
 
-    X.fillna(X.mean(), inplace=True) # Handle missing values (if any) or Nan values with mean
+    X = X.fillna(X.mean()) # Handle missing values (if any) or Nan values with mean
 
     # Convert categorical features to category type
     # X['waterfront'] = X['waterfront'].astype('category')
@@ -148,18 +148,18 @@ if __name__ == '__main__':
     # Then plot average loss as function of training size with error ribbon of size (mean-2*std, mean+2*std)
 
     # Initialize variables
-    percentages = range(10, 101)  # Percentage values from 10% to 100%
+    percentages = list(range(10, 101, 1))
     losses = []
 
     # Iterate over each percentage of training set
     for p in percentages:
         p_losses = []
-        for _ in range(10):  # Repeat 10 times for each percentage
+        for i in range(10):  # Repeat 10 times for each percentage
             # Sample p% of training data
             if p == 100:
-                X_train_sampled, unused_X, y_train_sampled, unused_y = train_test_split(X_train_clean, y_train, train_size=1, random_state=52)
+                X_train_sampled, _, y_train_sampled, _ = X_train_clean, None, y_train, None
             else:
-                X_train_sampled, unused_X, y_train_sampled, unused_y = train_test_split(X_train_clean, y_train, train_size=float(p)/100.0, random_state=52)
+                X_train_sampled, _, y_train_sampled, _ = train_test_split(X_train_clean, y_train, train_size=float(p)/100.0, random_state=52)
 
             # Fit linear regression model
             model = LinearRegression(include_intercept=True)
@@ -170,18 +170,18 @@ if __name__ == '__main__':
             p_losses.append(test_loss)
 
         # Store mean and standard deviation of loss for this percentage
-        losses.append((np.mean(p_losses), np.std(p_losses)))
+        losses.append(np.mean(p_losses))
 
-    # Extract mean losses and standard deviations
-    mean_losses = [loss[0] for loss in losses]
-    std_losses = [loss[1] for loss in losses]
-
-    # Plot mean loss as a function of percentage
-    plt.errorbar(percentages, mean_losses, yerr=2 * np.array(std_losses), fmt='-o')
-    plt.xlabel('Percentage of Training Set (%)')
-    plt.ylabel('Mean Loss')
-    plt.title('Mean Loss vs. Percentage of Training Set')
-    plt.grid(True)
+    # Plot the mean loss as a function of p%, as well as a confidence interval of mean(loss) ± 2 ∗ std(loss).
+    plt.plot(percentages, losses, label="Mean Loss")
+    plt.fill_between(percentages, np.array(losses) - 2 * np.std(losses), np.array(losses) + 2 * np.std(losses), alpha=0.3, label="Mean Loss ± 2*std")
+    plt.xlabel("Percentage of Training Data (%)")
+    plt.ylabel("Mean Loss")
+    plt.title("Mean Loss as function of Training Data Size")
     plt.show()
-                
+    plt.close()
 
+
+
+                      
+                
