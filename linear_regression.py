@@ -1,7 +1,5 @@
-
 import numpy as np
 from typing import NoReturn
-
 
 class LinearRegression:
     """
@@ -51,11 +49,11 @@ class LinearRegression:
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        if self.include_intercept_ == True: # Add intercept to X if needed
+        if self.include_intercept_:
             ones = np.ones((X.shape[0], 1))
             X = np.hstack((ones, X))
 
-        self.coefs_ = np.linalg.inv(X.T.dot(X)).dot(X.T).dot(y) # Compute coefficients using x^T * x = x^T * y
+        self.coefs = np.linalg.pinv(X.T @ X) @ X.T @ y
         self.fitted_ = True
 
     def predict(self, X: np.ndarray) -> np.ndarray:
@@ -73,10 +71,13 @@ class LinearRegression:
             Predicted responses of given samples
         """
         if not self.fitted_:
-            raise ValueError("Estimator has not been fitted yet.")
+            raise ValueError("Estimator is not fitted, call `fit` before exploiting the estimator")
+
         if self.include_intercept_:
-            X = np.hstack([np.ones((X.shape[0], 1)), X]) # Add intercept to X if needed
-        return X.dot(self.coefs_)
+            ones = np.ones((X.shape[0], 1))
+            X = np.hstack((ones, X))
+
+        return X @ self.coefs
 
     def loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
