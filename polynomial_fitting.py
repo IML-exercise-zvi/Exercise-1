@@ -31,7 +31,8 @@ class PolynomialFitting(LinearRegression):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        self.linear_regression.fit(self.__transform(X), y)
+        transformed = self.__transform(X)
+        self.linear_regression.fit(transformed, y)
         
 
     def predict(self, X: np.ndarray) -> np.ndarray:
@@ -48,7 +49,8 @@ class PolynomialFitting(LinearRegression):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        return self.linear_regression.predict(self.__transform(X))
+        transformed = self.__transform(X)
+        return self.linear_regression.predict(transformed)
 
     def loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -67,7 +69,8 @@ class PolynomialFitting(LinearRegression):
         loss : float
             Performance under MSE loss function
         """
-        return self.linear_regression.loss(self.__transform(X), y)
+        transformed = self.__transform(X)
+        return self.linear_regression.loss(transformed, y)
 
     def __transform(self, X: np.ndarray) -> np.ndarray:
         """
