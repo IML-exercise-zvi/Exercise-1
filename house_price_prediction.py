@@ -108,11 +108,7 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
         plt.title(f"{column} - Pearson Correlation: {pearson_corr}")
         plt.xlabel(column)
         plt.ylabel("price")
-        # i want to save it in my mac in IML folder in Graphs-ex1 folder
-        output_path = "/Users/zvimarmor/Desktop/IML/Graphs-ex1"
-        #plt.savefig(f"{output_path}/{column}.png")
-        plt.show()
-        plt.close()
+        plt.savefig('pearson_corr for ' + column + 'feature.png')
 
 
 if __name__ == '__main__':
@@ -126,7 +122,7 @@ if __name__ == '__main__':
     X_train_clean, y_train_clean = preprocess_train(X_train, y_train)
 
     # Question 4 - Feature evaluation of train dataset with respect to response
-    #feature_evaluation(X_train_clean, y_train)
+    feature_evaluation(X_train_clean, y_train)
 
     # Question 5 - preprocess the test data
     X_test_clean = preprocess_test(X_test)
@@ -174,8 +170,7 @@ if __name__ == '__main__':
     plt.xlabel('Percentage of Training Set (%)')
     plt.ylabel('Mean Loss')
     plt.title('Mean Loss vs. Percentage of Training Set')
-    plt.grid(True)
-    plt.show()
+    plt.savefig('mean_loss_vs_percentage_of_training_set.png')
 
 
 
